@@ -405,7 +405,7 @@ docker exec -it pgPrimary psql -U postgres -c "SELECT pg_reload_conf();"
 **PowerShell (Windows):**
 
 ```powershell
-docker exec -it pgPrimary psql -U postgres -c 'ALTER SYSTEM SET synchronous_standby_names = ''"pgReplica"'';'
+docker exec -it **pgPrimary** psql -U postgres -c 'ALTER SYSTEM SET synchronous_standby_names = ''"pgReplica"'';'
 docker exec -it pgPrimary psql -U postgres -c "SELECT pg_reload_conf();"
 ```
 
