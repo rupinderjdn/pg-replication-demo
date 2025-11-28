@@ -1,0 +1,43 @@
+services:
+  pg-primary:
+    image: postgres:15-alpine
+    container_name: pg-primary
+    environment:
+      POSTGRES_PASSWORD: primary_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./primary_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  pg-replica:
+    image: postgres:15-alpine
+    container_name: pg-replica
+    environment:
+      POSTGRES_PASSWORD: replica_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./replica_data:/var/lib/postgresql/data
+    depends_on:
+      - pg-primary
+    entrypoint: ["bash", "-c"]
+    command:
+      - >
+        until pg_isready -h pg-primary -p 5432; do
+          echo "waiting for primary..."; sleep 1;
+        done;
+
+        if [ -z "$(ls -A /var/lib/postgresql/data)" ]; then
+          echo "Running pg_basebackup...";
+          export PGPASSWORD=rep_pass;
+          pg_basebackup -h pg-primary -D /var/lib/postgresql/data -U replicator -v -P --wal-method=stream;
+          echo "primary_conninfo = 'host=pg-primary port=5432 user=replicator password=rep_pass application_name=pg-replica'" >> /var/lib/postgresql/data/postgresql.auto.conf;
+          touch /var/lib/postgresql/data/standby.signal;
+        fi;
+
+        exec docker-entrypoint.sh postgres;
