@@ -1,7 +1,7 @@
 services:
   pg-primary:
     image: postgres:15-alpine
-    container_name: pg-primary
+    container_name: pgPrimary
     environment:
       POSTGRES_PASSWORD: primary_pass
     ports:
@@ -16,7 +16,7 @@ services:
 
   pg-replica:
     image: postgres:15-alpine
-    container_name: pg-replica
+    container_name: pgReplica
     environment:
       POSTGRES_PASSWORD: replica_pass
     ports:
